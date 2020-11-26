@@ -1,6 +1,7 @@
 package io.baselogic.springsecurity.service;
 
 import io.baselogic.springsecurity.domain.AppUser;
+import org.springframework.security.core.context.SecurityContext;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.NotNull;
@@ -31,4 +32,5 @@ public interface UserContext {
      */
     void setCurrentUser(@NotNull(message="user.notNull.key") AppUser appUser);
 
+   SecurityContext getCurrentContext();
 } // The End...

@@ -45,7 +45,7 @@ public class SpringSecurityUserContext implements UserContext {
     @Override
     public AppUser getCurrentUser() {
 
-        SecurityContext context = SecurityContextHolder.getContext();
+        SecurityContext context = getCurrentContext();
         Authentication authentication = context.getAuthentication();
 
         if (authentication == null) {
@@ -71,7 +71,11 @@ public class SpringSecurityUserContext implements UserContext {
                 userDetails,
                 appUser.getPassword(),
                 userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        getCurrentContext().setAuthentication(authentication);
+    }
+
+    public  SecurityContext getCurrentContext(){
+         return SecurityContextHolder.getContext();
     }
 
 } // The End...
