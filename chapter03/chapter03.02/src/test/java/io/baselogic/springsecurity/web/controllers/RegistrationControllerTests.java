@@ -5,6 +5,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import io.baselogic.springsecurity.dao.TestUtils;
+import io.baselogic.springsecurity.web.model.RegistrationDto;
+import io.florianlopes.spring.test.web.servlet.request.MockMvcRequestBuilderUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,8 +22,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 
 /**
  * RegistrationControllerTests
@@ -310,6 +312,53 @@ class RegistrationControllerTests {
 
 
     //-----------------------------------------------------------------------//
+    @Test
+    @WithAnonymousUser
+    @DisplayName("Test register/new by itself")
+    void registrationTest() throws Exception{
+        RegistrationDto registrationDto = new RegistrationDto();
+        registrationDto.setFirstName("Helen");
+        registrationDto.setLastName("Ma");
+        registrationDto.setEmail("helenma@baselogic.com");
+        registrationDto.setPassword("helen");
+
+        mockMvc.perform(MockMvcRequestBuilderUtils.postForm("/registration/new",registrationDto))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"))
+                .andExpect(flash()
+                        .attribute("message", "Registration Successful. Account created for 'helenma@baselogic.com'."));
+    }
+
+    @Test
+    @WithAnonymousUser
+    @DisplayName("Test register/new with invalid data")
+    void registrationTest_notValidated() throws Exception{
+        RegistrationDto registrationDto = new RegistrationDto();
+        registrationDto.setFirstName(" ");
+        registrationDto.setLastName(" ");
+        registrationDto.setEmail(" ");
+        registrationDto.setPassword(" ");
+
+        mockMvc.perform(MockMvcRequestBuilderUtils.postForm("/registration/new",registrationDto))
+                .andExpect(status().isOk())
+                .andExpect(view().name("registration/register"));
+
+    }
+
+    @Test
+    @WithAnonymousUser
+    @DisplayName("Test register/new with an existing user email. It will not register this new user.")
+    void registrationTest_emailInUse() throws Exception{
+        RegistrationDto registrationDto = new RegistrationDto();
+        registrationDto.setFirstName("helen");
+        registrationDto.setLastName("ma");
+        registrationDto.setEmail("user1@baselogic.com");
+        registrationDto.setPassword("helen");
+
+        mockMvc.perform(MockMvcRequestBuilderUtils.postForm("/registration/new",registrationDto))
+                .andExpect(status().isOk())
+                .andExpect(view().name("registration/register"));
+    }
 
 
 } // The End...
