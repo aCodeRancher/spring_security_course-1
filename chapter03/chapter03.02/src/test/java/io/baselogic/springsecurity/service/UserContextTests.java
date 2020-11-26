@@ -9,17 +9,24 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Iterator;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 
 /**
@@ -175,5 +182,46 @@ class UserContextTests {
         AppUser result = userContext.getCurrentUser();
         assertThat(result).isNull();
     }
+
+    @Test
+    @DisplayName("Test getCurrentUser without any exception")
+    @WithMockUser(username="user1@baselogic.com", roles="USER")
+    void test_getCurrentUser(){
+        String email = "user1@baselogic.com";
+        given(eventService.findUserByEmail(email)).willReturn(appUser1);
+        AppUser appUser = userContext.getCurrentUser();
+        assertTrue(appUser.getEmail().equals(appUser1.getEmail()));
+        verify(eventService,times(1)).findUserByEmail(email);
+    }
+
+    @Test
+    @DisplayName("Test with a random user in security context")
+    @WithMockUser(username="helen@baselogic.com", password="helenPIN" , roles="STUDENT")
+    void test_getCurrentRandomUser(){
+        String email = "helen@baselogic.com";
+        AppUser randomUser = new AppUser();
+        randomUser.setEmail(email);
+        given(eventService.findUserByEmail(email)).willReturn(randomUser);
+        AppUser appUser = userContext.getCurrentUser();
+        assertTrue(appUser.getEmail().equals(email));
+        verify(eventService,times(1)).findUserByEmail(email);
+        Authentication authentication = userContext.getCurrentContext().getAuthentication();
+        assertTrue(authentication.getCredentials().toString().equals("helenPIN"));
+        Iterator itr = authentication.getAuthorities().iterator();
+        assertTrue(itr.next().toString().equals("ROLE_STUDENT"));
+        assertTrue(authentication.getName().equals("helen@baselogic.com"));
+    }
+
+    @DisplayName("Test with appUser1 without @WithMockUser")
+    @Test
+    void test_setCurrentUser_AppUser1(){
+         userContext.setCurrentUser(appUser1);
+         Authentication authentication = userContext.getCurrentContext().getAuthentication();
+         assertTrue(authentication.getCredentials().toString().equals("user1"));
+         Iterator itr = authentication.getAuthorities().iterator();
+         assertTrue(itr.next().toString().equals("ROLE_USER"));
+         assertTrue(authentication.getName().equals("user1@baselogic.com"));
+    }
+
 
 } // The End...
