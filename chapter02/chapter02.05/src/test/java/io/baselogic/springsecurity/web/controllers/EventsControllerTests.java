@@ -3,6 +3,7 @@ package io.baselogic.springsecurity.web.controllers;
 import io.baselogic.springsecurity.dao.TestUtils;
 import io.baselogic.springsecurity.service.UserContext;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,9 +12,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -174,7 +178,7 @@ class EventsControllerTests {
 
                 .andExpect(content().string(containsString("Current User Events")))
                 .andExpect(content().string(containsString("This shows all events for the current appUser.")))
-                .andExpect(model().attribute("events", hasSize(greaterThanOrEqualTo(3))))
+                .andExpect(model().attribute("events", hasSize(greaterThanOrEqualTo(2))))
                 .andReturn();
     }
 
@@ -268,6 +272,8 @@ class EventsControllerTests {
     @Test
     @DisplayName("Submit Event Form")
 //    @WithMockUser("user1@baselogic.com")
+    @Transactional
+    @Rollback(true)
     void createEvent() throws Exception {
 
         MvcResult result = mockMvc.perform(post("/events/new")
@@ -290,6 +296,8 @@ class EventsControllerTests {
 
     @Test
     @DisplayName("Submit Event Form - null email")
+    @Transactional
+    @Rollback(true)
     void createEvent_null_email() throws Exception {
 
         MvcResult result = mockMvc.perform(post("/events/new")
@@ -311,6 +319,8 @@ class EventsControllerTests {
 
     @Test
     @DisplayName("Submit Event Form - not found email")
+    @Transactional
+    @Rollback(true)
     void createEvent_not_found_email() throws Exception {
 
         MvcResult result = mockMvc.perform(post("/events/new")
@@ -334,6 +344,8 @@ class EventsControllerTests {
 
     @Test
     @DisplayName("Submit Event Form - null when")
+    @Transactional
+    @Rollback(true)
     void createEvent_null_when() throws Exception {
 
         MvcResult result = mockMvc.perform(post("/events/new")
@@ -357,6 +369,8 @@ class EventsControllerTests {
 
     @Test
     @DisplayName("Submit Event Form - null summary")
+    @Transactional
+    @Rollback(true)
     void createEvent_null_summary() throws Exception {
 
         MvcResult result = mockMvc.perform(post("/events/new")
@@ -380,6 +394,8 @@ class EventsControllerTests {
 
     @Test
     @DisplayName("Submit Event Form - null description")
+    @Transactional
+    @Rollback(true)
     void createEvent_null_description() throws Exception {
 
         MvcResult result = mockMvc.perform(post("/events/new")
