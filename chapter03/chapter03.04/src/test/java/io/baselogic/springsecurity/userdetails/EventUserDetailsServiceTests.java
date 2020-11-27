@@ -13,8 +13,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Iterator;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
@@ -53,7 +56,10 @@ class EventUserDetailsServiceTests {
                 .willReturn(TestUtils.user1);
 
         UserDetails result = eventUserDetailsService.loadUserByUsername(TestUtils.user1.getEmail());
-
+        assertTrue(result.getUsername().equals(TestUtils.user1.getEmail()));
+        assertTrue(result.getPassword().equals(TestUtils.user1.getPassword()));
+        Iterator itr = result.getAuthorities().iterator();
+        assertTrue(itr.next().toString().equals("ROLE_USER"));
         assertThat(result).isNotNull();
     }
 
@@ -66,7 +72,11 @@ class EventUserDetailsServiceTests {
                 .willReturn(TestUtils.admin1);
 
         UserDetails result = eventUserDetailsService.loadUserByUsername(TestUtils.admin1.getEmail());
-
+        assertTrue(result.getUsername().equals(TestUtils.admin1.getEmail()));
+        assertTrue(result.getPassword().equals(TestUtils.admin1.getPassword()));
+        Iterator itr = result.getAuthorities().iterator();
+        assertTrue(itr.next().toString().equals("ROLE_ADMIN"));
+        assertTrue(itr.next().toString().equals("ROLE_USER"));
         assertThat(result).isNotNull();
     }
 
