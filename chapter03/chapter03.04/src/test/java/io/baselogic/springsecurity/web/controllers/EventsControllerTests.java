@@ -1,5 +1,6 @@
 package io.baselogic.springsecurity.web.controllers;
 
+import io.baselogic.springsecurity.annotations.WithMockEventUserDetailsUser1;
 import io.baselogic.springsecurity.dao.TestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.CoreMatchers;
@@ -12,9 +13,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -170,7 +173,7 @@ class EventsControllerTests {
 
                 .andExpect(content().string(containsString("Current User Events")))
                 .andExpect(content().string(containsString("This shows all events for the current appUser.")))
-                .andExpect(model().attribute("events", hasSize(greaterThanOrEqualTo(3))))
+                .andExpect(model().attribute("events", hasSize(greaterThanOrEqualTo(2))))
                 .andReturn();
     }
 
@@ -260,6 +263,8 @@ class EventsControllerTests {
     @Test
     @DisplayName("Submit Event Form")
     @WithUserDetails("user1@baselogic.com")
+    @Transactional
+    @Rollback
     void createEvent() throws Exception {
 
         MvcResult result = mockMvc.perform(post("/events/new")
