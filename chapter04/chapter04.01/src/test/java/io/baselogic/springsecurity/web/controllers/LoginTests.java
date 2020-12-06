@@ -1,5 +1,6 @@
 package io.baselogic.springsecurity.web.controllers;
 
+import io.baselogic.springsecurity.annotations.WithMockDisabledUser;
 import io.baselogic.springsecurity.annotations.WithMockEventUserDetailsAdmin1;
 import io.baselogic.springsecurity.annotations.WithMockEventUserDetailsUser1;
 import io.baselogic.springsecurity.dao.TestUtils;
@@ -279,4 +280,22 @@ class LoginTests {
 
     }
 
+    @Test
+    @DisplayName("Form Login - disabled user ")
+    void testDisabledUser_loginForm () throws Exception{
+        mockMvc.perform(
+                formLogin()
+                        .user("disabled1@baselogic.com")
+                        .password("disabled1"))
+                .andExpect(unauthenticated());
+   }
+
+    @Test
+    @DisplayName("Disabled user login test")
+    @WithMockDisabledUser
+    void testDisabledUser_login () throws Exception{
+        mockMvc.perform(get("/events/my"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("events/my"));
+    }
 } // The End...
