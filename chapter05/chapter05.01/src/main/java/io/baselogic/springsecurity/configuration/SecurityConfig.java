@@ -1,5 +1,6 @@
 package io.baselogic.springsecurity.configuration;
 
+import io.baselogic.springsecurity.authentication.EventUserAuthenticationProvider;
 import io.baselogic.springsecurity.service.DefaultEventService;
 import io.baselogic.springsecurity.service.EventService;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,8 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String HASROLE_ADMIN = "hasRole('ADMIN')";
 
     @Autowired
-    private UserDetailsService userDetailsService;
-
+    EventUserAuthenticationProvider euap;
 
 
     /**
@@ -80,10 +81,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Description("Configure AuthenticationManager with inMemory credentials")
     @Override
     public void configure(final AuthenticationManagerBuilder auth) throws Exception {
-        auth
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder())
-        ;
+        auth.authenticationProvider(euap);
     }
 
 
@@ -245,5 +243,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new DelegatingPasswordEncoder(idForEncode, encoders);
     }
 
+    @Bean
+    public EventUserAuthenticationProvider authenticationProvider(final @NotNull PasswordEncoder passwordEncoder,
+                                                                  final @NotNull EventService eventService) {
+
+        return new EventUserAuthenticationProvider(passwordEncoder, eventService);
+    }
 
 } // The End...
